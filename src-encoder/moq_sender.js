@@ -108,9 +108,19 @@ self.addEventListener('message', async function (e) {
       // Replace protocol
       url.protocol = 'https'
 
+      // Chrome needs a fingerprint of the certificate
+      const options = {
+        serverCertificateHashes: [
+            {
+                algorithm: "sha-256",
+                value: new Uint8Array(JSON.parse(await (await this.fetch("/fingerprint.txt", { method: "GET" })).text()))
+            }
+        ]
+    }
+
       // Ini WT
       // eslint-disable-next-line no-undef
-      moqt.wt = new WebTransport(url.href)
+      moqt.wt = new WebTransport(url.href, options)
       moqt.wt.closed
         .then(() => {
           sendMessageToMain(WORKER_PREFIX, 'info', 'WT closed transport session')
